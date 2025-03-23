@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+
+class DeviceData extends StatefulWidget {
+  final int deviceId;
+  final Map<String, dynamic> data;
+  const DeviceData({super.key, required this.deviceId, required this.data});
+
+  @override
+  State<DeviceData> createState() => _DeviceDataState();
+}
+
+class _DeviceDataState extends State<DeviceData> {
+  // Function to format the titles
+  String formatTitle(String key) {
+    Map<String, String> titleMapping = {
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "soilMoisturePercentage": "Soil Moisture Percentage",
+      "soilTemperature": "Soil Temperature",
+      "soilPh": "Soil pH",
+    };
+
+    return titleMapping[key] ?? key; // Default to the key if no mapping found
+  }
+
+  // Function to format the values
+  String formatValue(String key, dynamic value) {
+    if (value is num) {
+      switch (key) {
+        case "temperature":
+        case "soilTemperature":
+          return "${value.toStringAsFixed(2)}°C"; // 2 decimal places + °C
+        case "soilMoisturePercentage":
+          return "${value.toStringAsFixed(2)}%"; // 2 decimal places + %
+        default:
+          return value.toString(); // Default format
+      }
+    }
+    return value.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Device ${widget.deviceId} Data")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: widget.data.entries
+              .where((entry) => entry.key != "soilMoistureRaw") // Exclude "soilMoistureRaw"
+              .map((entry) {
+            return Card(
+              child: ListTile(
+                title: Text(formatTitle(entry.key)),
+                subtitle: Text(formatValue(entry.key, entry.value)),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}

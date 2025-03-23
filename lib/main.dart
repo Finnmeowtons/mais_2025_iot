@@ -3,10 +3,12 @@ import 'package:mais_2025_iot/mqtt_manager.dart';
 import 'package:mais_2025_iot/screens/home_page.dart';
 import 'package:mais_2025_iot/screens/water_monitoring.dart';
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   final mqttManager = MqttManager();
-  mqttManager.initialize(); // Initialize connection
+  await mqttManager.initialize(); // Initialize connection
+  mqttManager.subscribe("sensor/+/data");
+  mqttManager.subscribe("water-level/full-state");
   runApp(MyApp(mqttManager: mqttManager));
 }
 

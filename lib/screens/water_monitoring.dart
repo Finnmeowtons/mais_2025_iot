@@ -33,14 +33,19 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
   int? lastWaterState;
 
   void firstLoad() {
-    setState(() {
-      _isLoading = true;
-    });
-    Future.delayed(Duration(seconds: 3), () {
+    if (mounted) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
-    });
+
+      Future.delayed(Duration(seconds: 3), () {
+        if (mounted) { // Check again before calling setState
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -61,14 +66,9 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
     firstLoad();
   }
 
-  void _setupMqttSubscriptions() {
-    final topics = [
-      "water-level/full-state",
-    ];
 
-    for (var topic in topics) {
-      mqttManager.subscribe(topic);
-    }
+
+  void _setupMqttSubscriptions() {
 
     mqttManager.client?.updates?.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
       if (c == null || c.isEmpty) return;
@@ -96,20 +96,28 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
 
           // ✅ Check if values changed before updating the state
           if (newPumpControl != pumpControl || newAutoPump != autoPump || newFaucetControl != faucetControl || newAutoWater != autoWater || newMode != mode || newWaterState != waterState) {
-            setState(() {
-              pumpControl = newPumpControl;
-              autoPump = newAutoPump;
-              faucetControl = newFaucetControl;
-              autoWater = newAutoWater;
-              mode = newMode;
-              waterState = newWaterState;
-            });
+            if (mounted) {
+              setState(() {
+                pumpControl = newPumpControl;
+                autoPump = newAutoPump;
+                faucetControl = newFaucetControl;
+                autoWater = newAutoWater;
+                mode = newMode;
+                waterState = newWaterState;
+              });
+            }
           }
         } catch (e) {
           print("JSON Parsing Error: $e\nReceived message: $newMessage");
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    mqttManager.client?.updates?.listen((event) {}).cancel(); // Cancel subscription
+    super.dispose();
   }
 
   @override
