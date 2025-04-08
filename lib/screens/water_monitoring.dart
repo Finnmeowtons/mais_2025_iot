@@ -18,11 +18,11 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
   final MqttManager mqttManager = MqttManager();
 
   bool _isLoading = false; // Track loading state
-  String pumpControl = '';
-  String autoPump = '';
-  String faucetControl = '';
-  String autoWater = '';
-  String mode = 'mais';
+  String pumpControl = 'false';
+  String autoPump = 'false';
+  String faucetControl = 'false';
+  String autoWater = 'false';
+  String mode = 'tank';
   int waterState = 0;
 
   String? lastPumpControl;
@@ -85,13 +85,13 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
 
         try {
           Map<String, dynamic> fullState = json.decode(newMessage);
-
+          print(fullState);
           // ✅ Ensure all values exist and convert types safely
-          String newPumpControl = fullState["pump_state"]?.toString() ?? "false";
-          String newAutoPump = fullState["auto_pump"]?.toString() ?? "false";
-          String newFaucetControl = fullState["faucet_state"]?.toString() ?? "false";
-          String newAutoWater = fullState["auto_faucet"]?.toString() ?? "false";
-          String newMode = fullState["mode"]?.toString() ?? "tank";
+          String newPumpControl = fullState["pump_state"]?.toString() ?? pumpControl;
+          String newAutoPump = fullState["auto_pump"]?.toString() ?? autoPump;
+          String newFaucetControl = fullState["faucet_state"]?.toString() ?? faucetControl;
+          String newAutoWater = fullState["auto_faucet"]?.toString() ?? autoWater;
+          String newMode = fullState["mode"]?.toString() ?? mode;
           int newWaterState = int.tryParse(fullState["water_level"]?.toString() ?? "0") ?? 0;
 
           // ✅ Check if values changed before updating the state

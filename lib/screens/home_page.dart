@@ -49,6 +49,9 @@ class _HomePageState extends State<HomePage> {
                 "soilMoisturePercentage": fullState["soil_moisture_percentage"] ?? 0,
                 "soilTemperature": fullState["soil_temperature"] ?? 0,
                 "soilPh": fullState["soil_ph"] ?? 0,
+                "nitrogen":   fullState["nitrogen"] ?? 0,
+                "phosphorus": fullState["phosphorus"] ?? 0,
+                "potassium":  fullState["potassium"] ?? 0
               };
             });
           } else {
@@ -333,6 +336,32 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (data["nitrogen"].toString() != "0") Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _DataPreview(
+                      icon: Icons.gas_meter,
+                      iconColor: Colors.green,
+                      label: "Nitrogen",
+                      value: data["nitrogen"].toString(),
+                      textColor: Colors.black,
+                    ),
+                    _DataPreview(
+                      icon: Icons.gas_meter,
+                      iconColor: Colors.blueAccent,
+                      label: "Phosphorus",
+                      value: data["phosphorus"].toString(),
+                      textColor: Colors.black,
+                    ),
+                    _DataPreview(
+                      icon: Icons.gas_meter,
+                      iconColor: Colors.purple,
+                      label: "Potassium",
+                      value: data["potassium"].toString(),
+                      textColor: Colors.black,
+                    ),
+                  ],
+                )
               ],
             ),
           ),
