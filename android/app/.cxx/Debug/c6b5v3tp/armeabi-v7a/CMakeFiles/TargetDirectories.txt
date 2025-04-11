@@ -1,0 +1,2 @@
+F:/WayfinderWeb/mais_2025_iot/android/app/.cxx/Debug/c6b5v3tp/armeabi-v7a/CMakeFiles/edit_cache.dir
+F:/WayfinderWeb/mais_2025_iot/android/app/.cxx/Debug/c6b5v3tp/armeabi-v7a/CMakeFiles/rebuild_cache.dir

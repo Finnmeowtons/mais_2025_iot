@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mais_2025_iot/screens/chartwidget/chart_legend.dart';
+import 'package:mais_2025_iot/screens/chartwidget/raw_chart_screen.dart';
+import 'package:mais_2025_iot/screens/graphchart/graph_chart_screen.dart';
 
 class DeviceData extends StatefulWidget {
   final int deviceId;
@@ -45,17 +48,67 @@ class _DeviceDataState extends State<DeviceData> {
       appBar: AppBar(title: Text("Device ${widget.deviceId} Data"), actions: [IconButton(onPressed: (){}, icon: Icon(Icons.table_chart_rounded))],),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: widget.data.entries
-              .where((entry) => entry.key != "soilMoistureRaw") // Exclude "soilMoistureRaw"
-              .map((entry) {
-            return Card(
-              child: ListTile(
-                title: Text(formatTitle(entry.key)),
-                subtitle: Text(formatValue(entry.key, entry.value)),
+        child: SingleChildScrollView(
+          // Wrap the Column
+          child: Column(
+            children: [
+              Container(
+                height: 300, // Adjust to a more reasonable height
+                // child: RawChartScreen(
+                //   deviceId: widget.deviceId, // Use the correct deviceId
+                // ),
+                child: GraphChartScreen(
+                  deviceId: widget.deviceId, // Use the correct deviceId
+                ),
               ),
-            );
-          }).toList(),
+              const SizedBox(height: 16),
+              // Add the ChartLegend here
+              ChartLegend(
+                items: [
+                  LegendItemData(
+                      icon: Icons.thermostat,
+                      color: Colors.red,
+                      label: "Temperature"),
+                  LegendItemData(
+                      icon: Icons.water_drop_rounded,
+                      color: Colors.blue,
+                      label: "Humidity"),
+                  LegendItemData(
+                      icon: Icons.opacity_rounded,
+                      color: Colors.brown,
+                      label: "Soil Moisture Raw"),
+                  LegendItemData(
+                      icon: Icons.eco,
+                      color: Colors.green,
+                      label: "Soil Moisture %"),
+                  LegendItemData(
+                      icon: Icons.thermostat_auto,
+                      color: Colors.orange,
+                      label: "Soil Temperature"),
+                  LegendItemData(
+                      icon: Icons.science,
+                      color: Colors.purple,
+                      label: "Soil pH"),
+                ],
+              ),
+              const SizedBox(height: 16), // Add some spacing
+              ListView(
+                shrinkWrap: true, // Important for ListView inside a Column
+                physics:
+                    const NeverScrollableScrollPhysics(), // Disable ListView's scrolling
+                children: widget.data.entries
+                    .where((entry) => entry.key != "soilMoistureRaw")
+                    .map((entry) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(formatTitle(entry.key)),
+                      subtitle: Text(formatValue(entry.key, entry.value)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
