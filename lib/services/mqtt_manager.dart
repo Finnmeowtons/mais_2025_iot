@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
+
+import 'package:mqtt5_client/mqtt5_client.dart';
+import 'package:mqtt5_client/mqtt5_server_client.dart';
 
 class MqttManager {
   static final MqttManager _instance = MqttManager._internal();
@@ -24,15 +25,11 @@ class MqttManager {
   Future<void> initialize() async {
     client = MqttServerClient.withPort(server, clientId, port);
     client!.logging(on: false);
+    client!.keepAlivePeriod = 20;
+    client!.autoReconnect = true;
+    client!.resubscribeOnAutoReconnect = false;
     client!.onDisconnected = _onDisconnected;
     client!.onConnected = _onConnected;
-    client!.onSubscribed = _onSubscribed;
-
-    final connMess = MqttConnectMessage()
-        .withWillTopic('will/topic')
-        .withWillMessage('My last will')
-        .withWillQos(MqttQos.atLeastOnce);
-    client!.connectionMessage = connMess;
 
     await _connect();
   }
@@ -48,7 +45,6 @@ class MqttManager {
     } catch (e) {
       print('MQTT Connection failed: $e');
       isConnected = false;
-      _scheduleReconnect();
     }
   }
 
@@ -56,28 +52,12 @@ class MqttManager {
     print('MQTT Disconnected! Attempting to reconnect...');
     isConnected = false;
 
-    onDisconnectedCallback?.call(); // Notify UI about disconnection
-
-    _scheduleReconnect();
+    onDisconnectedCallback?.call();
   }
 
   void _onConnected() {
     print('MQTT Reconnected!');
     isConnected = true;
-    _resubscribeTopics(); // Resubscribe when reconnected
-  }
-
-  void _onSubscribed(String topic) {
-    print('Successfully subscribed to topic: $topic');
-  }
-
-  void _scheduleReconnect() {
-    Future.delayed(Duration(seconds: 5), () {
-      if (!isConnected) {
-        print('Reconnecting...');
-        _connect();
-      }
-    });
   }
 
   void disconnect() {
@@ -90,7 +70,7 @@ class MqttManager {
 
   void publish(String topic, String message) {
     if (client != null && isConnected) {
-      final builder = MqttClientPayloadBuilder();
+      final builder = MqttPayloadBuilder();
       builder.addString(message);
       client!.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
     }

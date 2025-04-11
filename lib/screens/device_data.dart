@@ -45,7 +45,7 @@ class _DeviceDataState extends State<DeviceData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Device ${widget.deviceId} Data")),
+      appBar: AppBar(title: Text("Device ${widget.deviceId} Data"), actions: [IconButton(onPressed: (){}, icon: Icon(Icons.table_chart_rounded))],),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
