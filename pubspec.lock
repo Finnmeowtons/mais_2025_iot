@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  data_table_2:
+    dependency: "direct main"
+    description:
+      name: data_table_2
+      sha256: b8dd157e4efe5f2beef092c9952a254b2192cf76a26ad1c6aa8b06c8b9d665da
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.0"
   event_bus:
     dependency: transitive
     description:
@@ -127,12 +135,12 @@ packages:
     dependency: transitive
     description:
       name: html
-      sha256: "1fc58edeaec4307368c60d59b7e15b9d658b57d7f3125098b6294153c75337ec"
+      sha256: "9475be233c437f0e3637af55e7702cbbe5c23a68bd56e8a5fa2d426297b7c6c8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.15.5"
+    version: "0.15.5+1"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: fe7ab022b76f3034adc518fb6ea04a82387620e19977665ea18d30a1cf43442f
@@ -203,14 +211,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.15.0"
-  mqtt_client:
+  mqtt5_client:
     dependency: "direct main"
     description:
-      name: mqtt_client
-      sha256: "37aae360fac0b3322cb37267696c1535e1ad2984a13064d877273ffe4b16ca7a"
+      name: mqtt5_client
+      sha256: "9e15d1cd888035bcd5b204325c6678b32858ea3fc94bc1e41d5aa99d3a43f49f"
       url: "https://pub.dev"
     source: hosted
-    version: "10.5.1"
+    version: "4.11.0"
   path:
     dependency: transitive
     description:
@@ -370,4 +378,4 @@ packages:
     version: "6.5.0"
 sdks:
   dart: ">=3.6.1 <4.0.0"
-  flutter: ">=3.22.0"
+  flutter: ">=3.27.0"

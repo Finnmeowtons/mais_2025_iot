@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:mqtt5_client/mqtt5_client.dart';
 
-import '../mqtt_manager.dart';
+import '../services/mqtt_manager.dart';
 
 class WaterMonitoring extends StatefulWidget {
   const WaterMonitoring({super.key});
@@ -70,11 +69,11 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
 
   void _setupMqttSubscriptions() {
 
-    mqttManager.client?.updates?.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+    mqttManager.client?.updates.listen((dynamic c) {
       if (c == null || c.isEmpty) return;
 
       final recMess = c[0].payload as MqttPublishMessage;
-      String newMessage = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      String newMessage = MqttUtilities.bytesToStringAsString(recMess.payload.message!);
 
       if (newMessage.isNotEmpty) {
         // ✅ Check if the message is valid JSON

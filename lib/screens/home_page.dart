@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mais_2025_iot/mqtt_manager.dart';
 import 'package:mais_2025_iot/screens/device_data.dart';
+import 'package:mais_2025_iot/screens/raw_data_table.dart';
 import 'package:mais_2025_iot/screens/water_monitoring.dart';
-import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt5_client/mqtt5_client.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +21,8 @@ class _HomePageState extends State<HomePage> {
   bool faucetControl = false;
   int waterState = 0;
 
+  String recommendedFertilizer = "";
+
   @override
   void initState() {
     _setupMqttSubscriptions();
@@ -27,11 +30,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _setupMqttSubscriptions() {
-    mqttManager.client?.updates?.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+    mqttManager.client?.updates.listen((dynamic c) {
       if (c == null || c.isEmpty) return;
 
-      final recMess = c[0].payload as MqttPublishMessage;
-      String newMessage = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      final MqttPublishMessage recMess = c![0].payload;
+      String newMessage = MqttUtilities.bytesToStringAsString(recMess.payload.message!);
 
       if (newMessage.isNotEmpty && newMessage.trim().startsWith("{")) {
         try {
@@ -49,9 +52,9 @@ class _HomePageState extends State<HomePage> {
                 "soilMoisturePercentage": fullState["soil_moisture_percentage"] ?? 0,
                 "soilTemperature": fullState["soil_temperature"] ?? 0,
                 "soilPh": fullState["soil_ph"] ?? 0,
-                "nitrogen":   fullState["nitrogen"] ?? 0,
+                "nitrogen": fullState["nitrogen"] ?? 0,
                 "phosphorus": fullState["phosphorus"] ?? 0,
-                "potassium":  fullState["potassium"] ?? 0
+                "potassium": fullState["potassium"] ?? 0
               };
             });
           } else {
@@ -72,6 +75,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _AppBar(),
+      drawer: appDrawer(),
       body: CustomScrollView(
         slivers: [
           // Water Monitor Card at the Top
@@ -79,6 +83,12 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: _waterMonitor(), // Your water monitor widget
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: _recommendFertilizer(), // Your water monitor widget
             ),
           ),
 
@@ -99,22 +109,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
-      // devices.isEmpty
-      //     ? Center(child: Text("No devices connected"))
-      //     : ListView.builder(
-      //   itemCount: devices.length,
-      //   itemBuilder: (context, index) {
-      //     int deviceId = devices.keys.elementAt(index);
-      //     Map<String, dynamic> data = devices[deviceId]!;
-      //
-      //     return _DevicesPreviewSensorDataCard(data: data, deviceId: deviceId,);
-      //   },
-      // ),
     );
   }
 
-  Widget _waterMonitor(){
+  Widget _waterMonitor() {
     return Card(
       elevation: 4,
       margin: EdgeInsets.only(bottom: 16),
@@ -146,6 +144,72 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget _recommendFertilizer() {
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () {
+          print("Request Fertilizer Recommend");
+        },
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text("Fertilizer Recommendation", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  if (recommendedFertilizer == "") Text("Tap to request fertilizer \n recommendation", style: TextStyle(fontSize: 14), textAlign: TextAlign.center,),
+                  if (recommendedFertilizer != "") Center(child: Text(recommendedFertilizer,  style: TextStyle(fontSize: 18))),
+                ],
+              ),
+              Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xffd8bb61),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(Icons.compost_rounded, size: 36, color: Color(0xFF99af17)),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Drawer appDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blueAccent,
+            ),
+            child: Center(child: Text("Optimizing Corn Yield Using Smart Agricultural Management", textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),)),
+          ),
+          ListTile(
+            leading: Icon(Icons.table_chart_rounded),
+            title: Text('Raw Data Table'),
+            onTap: () async {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RawDataTable()),
+              );
+            },
+          ),
+
+        ],
+      ),
+    );
+  }
 }
 
 class _AppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -163,9 +227,11 @@ class _AppBarState extends State<_AppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       centerTitle: true,
-      leading: IconButton(
-        icon: Icon(Icons.menu),
-        onPressed: () {},
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
       ),
       backgroundColor: Colors.blue,
       toolbarHeight: kToolbarHeight * 1.5,
@@ -250,9 +316,7 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
         case "Soil Temperature":
           return value > soilTemperatureThreshold ? Colors.red : Colors.black;
         case "Soil pH":
-          return (value < soilPhLowThreshold || value > soilPhHighThreshold)
-              ? Colors.red
-              : Colors.black;
+          return (value < soilPhLowThreshold || value > soilPhHighThreshold) ? Colors.red : Colors.black;
       }
     }
     return Colors.black;
@@ -271,8 +335,7 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => DeviceData(deviceId: deviceId, data: data)),
+                MaterialPageRoute(builder: (context) => DeviceData(deviceId: deviceId, data: data)),
               );
             },
             child: Padding(
@@ -280,8 +343,7 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Device $deviceId",
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                  Text("Device $deviceId", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                   const Icon(Icons.arrow_forward, size: 24),
                 ],
               ),
@@ -336,32 +398,33 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (data["nitrogen"].toString() != "0") Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _DataPreview(
-                      icon: Icons.gas_meter,
-                      iconColor: Colors.green,
-                      label: "Nitrogen",
-                      value: data["nitrogen"].toString(),
-                      textColor: Colors.black,
-                    ),
-                    _DataPreview(
-                      icon: Icons.gas_meter,
-                      iconColor: Colors.blueAccent,
-                      label: "Phosphorus",
-                      value: data["phosphorus"].toString(),
-                      textColor: Colors.black,
-                    ),
-                    _DataPreview(
-                      icon: Icons.gas_meter,
-                      iconColor: Colors.purple,
-                      label: "Potassium",
-                      value: data["potassium"].toString(),
-                      textColor: Colors.black,
-                    ),
-                  ],
-                )
+                if (data["nitrogen"].toString() != "0")
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _DataPreview(
+                        icon: Icons.gas_meter,
+                        iconColor: Colors.green,
+                        label: "Nitrogen",
+                        value: data["nitrogen"].toString(),
+                        textColor: Colors.black,
+                      ),
+                      _DataPreview(
+                        icon: Icons.gas_meter,
+                        iconColor: Colors.blueAccent,
+                        label: "Phosphorus",
+                        value: data["phosphorus"].toString(),
+                        textColor: Colors.black,
+                      ),
+                      _DataPreview(
+                        icon: Icons.gas_meter,
+                        iconColor: Colors.purple,
+                        label: "Potassium",
+                        value: data["potassium"].toString(),
+                        textColor: Colors.black,
+                      ),
+                    ],
+                  )
               ],
             ),
           ),
