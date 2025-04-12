@@ -1,25 +1,32 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:http/http.dart' as http;
+import 'package:mais_2025_iot/services/api_service.dart';
 
 class RawDataTable extends StatefulWidget {
-  const RawDataTable({super.key});
+  final int deviceId; // Device ID to filter data for a specific device
+  const RawDataTable({super.key, this.deviceId = 0});
 
   @override
   State<RawDataTable> createState() => _RawDataTableState();
 }
 
 class _RawDataTableState extends State<RawDataTable> {
-  final _dataSource = RawDataSource();
+  late RawDataSource _dataSource;
   final _controller = PaginatorController();
+
+  @override
+  void initState() {
+    super.initState();
+    _dataSource = RawDataSource(deviceId: widget.deviceId);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Raw Sensor Data")),
+      appBar: AppBar(
+        title: (widget.deviceId == 0) ? Text("Sensor Raw Data") : Text("Device ${widget.deviceId} Sensor Raw Data"),
+      ),
       body: AsyncPaginatedDataTable2(
-        
         minWidth: 1500,
         // autoRowsToHeight: true,
         rowsPerPage: 50,
@@ -51,6 +58,10 @@ class _RawDataTableState extends State<RawDataTable> {
 }
 
 class RawDataSource extends AsyncDataTableSource {
+  final int deviceId;
+
+  RawDataSource({required this.deviceId});
+
   int _lastFetchedPage = 0;
   int _total = 10000;
 
@@ -58,18 +69,14 @@ class RawDataSource extends AsyncDataTableSource {
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
     final page = (startIndex ~/ 50) + 1;
     _lastFetchedPage = page;
-    final response = await http.get(Uri.parse(
-        'http://192.168.68.104:3000/api/raw-data?page=$page&limit=50'));
 
-    if (response.statusCode != 200) {
-      throw Exception("Failed to load data");
-    }
+    ApiService apiService = ApiService();
 
-    final Map<String, dynamic> json = jsonDecode(response.body);
-    final List<dynamic> rawList = json['data'];
+    final response = await apiService.getRawData(page, 50, deviceId);
+    final List<dynamic> rawList = response['data'];
     final data = List<Map<String, dynamic>>.from(rawList);
 
-    _total = json['total'] ?? data.length;
+    _total = response['total'] ?? data.length;
 
     final rows = data.map((row) {
       return DataRow(cells: [
@@ -90,7 +97,6 @@ class RawDataSource extends AsyncDataTableSource {
 
     return AsyncRowsResponse(_total, rows);
   }
-
 
   @override
   int get selectedRowCount => 0;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mais_2025_iot/mqtt_manager.dart';
 import 'package:mais_2025_iot/screens/home_page.dart';
+import 'package:mais_2025_iot/services/mqtt_manager.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();

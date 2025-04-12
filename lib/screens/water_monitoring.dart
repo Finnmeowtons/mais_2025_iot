@@ -115,14 +115,14 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
 
   @override
   void dispose() {
-    mqttManager.client?.updates?.listen((event) {}).cancel(); // Cancel subscription
+    mqttManager.client?.updates.listen((event) {}).cancel(); // Cancel subscription
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
+      appBar: AppBar(title: const Text("Water Control")),
       body: Center(
           child: Stack(
         children: [

@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:mais_2025_iot/mqtt_manager.dart';
+import 'package:intl/intl.dart';
 import 'package:mais_2025_iot/screens/device_data.dart';
 import 'package:mais_2025_iot/screens/raw_data_table.dart';
 import 'package:mais_2025_iot/screens/water_monitoring.dart';
+import 'package:mais_2025_iot/services/api_service.dart';
+import 'package:mais_2025_iot/services/mqtt_manager.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,17 +18,54 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final MqttManager mqttManager = MqttManager();
+  final ApiService apiService = ApiService();
   Map<int, Map<String, dynamic>> devices = {}; // Stores data per device
 
   bool faucetControl = false;
   int waterState = 0;
 
   String recommendedFertilizer = "";
+  String irrigationTime = "";
 
   @override
   void initState() {
     _setupMqttSubscriptions();
+    _irrigationForecast();
+    _recommendFertilizer();
     super.initState();
+  }
+
+  void _recommendFertilizer() {
+    apiService.recommendFertilizer().then((value) {
+      final fertilizer = value['recommendation'];
+      print(fertilizer);
+      if (fertilizer != null && fertilizer.isNotEmpty) {
+
+        setState(() {
+          recommendedFertilizer = fertilizer;
+        });
+      }
+    }).catchError((error) {
+      print("Error fetching recommended fertilizer: $error");
+
+    });
+  }
+
+  void _irrigationForecast() {
+    apiService.irrigationForecast().then((value) {
+      final rawTimestamp = value['irrigation_needed_at']; // e.g. "2025-04-12T18:15:01"
+
+      if (rawTimestamp != null && rawTimestamp.isNotEmpty) {
+        final dateTime = DateTime.parse(rawTimestamp);
+        final formattedTime = DateFormat('hh:mm a').format(dateTime);
+
+        setState(() {
+          irrigationTime = formattedTime; // e.g. "06:15 PM"
+        });
+      }
+    }).catchError((error) {
+      print("Error fetching irrigation forecast: $error");
+    });
   }
 
   void _setupMqttSubscriptions() {
@@ -88,7 +127,30 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: _recommendFertilizer(), // Your water monitor widget
+              child: Row(
+                children: [
+                  recommendFertilizer(),
+                  SizedBox(width: 16,),
+                  Expanded(
+                    child: Card(
+                      elevation: 4,
+                      margin: EdgeInsets.only(bottom: 16),
+                      child: Container(
+                        height: 120,
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Irrigation\nPrediction", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 8),
+                            irrigationTime.isEmpty ? SizedBox(width: 20, height: 20,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ), // Your water monitor widget
             ),
           ),
 
@@ -145,43 +207,45 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _recommendFertilizer() {
+  Widget recommendFertilizer() {
     return Card(
       elevation: 4,
+      clipBehavior: Clip.hardEdge,
       margin: EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: () {
-          print("Request Fertilizer Recommend");
-        },
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text("Fertilizer Recommendation", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  if (recommendedFertilizer == "") Text("Tap to request fertilizer \n recommendation", style: TextStyle(fontSize: 14), textAlign: TextAlign.center,),
-                  if (recommendedFertilizer != "") Center(child: Text(recommendedFertilizer,  style: TextStyle(fontSize: 18))),
-                ],
+      child: Container(
+        height: 120,
+        width: 170,
+        padding: EdgeInsets.all(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Recommended\nFertilizer",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            if (recommendedFertilizer.isEmpty)
+              SizedBox(height:20, width: 20, child: CircularProgressIndicator())
+            else if (recommendedFertilizer.isEmpty)
+              Text(
+                "Tap to request fertilizer \n recommendation",
+                style: TextStyle(fontSize: 14),
+                textAlign: TextAlign.center,
+              )
+            else
+              Center(
+                child: Text(
+                  recommendedFertilizer,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
-              Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xffd8bb61),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Icon(Icons.compost_rounded, size: 36, color: Color(0xFF99af17)),
-                  )),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
+
 
   Drawer appDrawer() {
     return Drawer(
@@ -398,7 +462,7 @@ class _DevicesPreviewSensorDataCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (data["nitrogen"].toString() != "0")
+                if (data["nitrogen"].toString() != "0" || data["phosphorus"].toString() != "0" || data["potassium"].toString() != "0")
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

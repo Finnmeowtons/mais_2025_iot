@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mais_2025_iot/screens/raw_data_table.dart';
 
 class DeviceData extends StatefulWidget {
   final int deviceId;
@@ -42,7 +43,12 @@ class _DeviceDataState extends State<DeviceData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Device ${widget.deviceId} Data"), actions: [IconButton(onPressed: (){}, icon: Icon(Icons.table_chart_rounded))],),
+      appBar: AppBar(title: Text("Device ${widget.deviceId} Data"), actions: [IconButton(onPressed: (){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RawDataTable(deviceId: widget.deviceId,)),
+        );
+      }, icon: Icon(Icons.table_chart_rounded))],),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
