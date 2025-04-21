@@ -34,8 +34,7 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getGraphData(
-      int deviceId, String start, String end) async {
+  Future<List<dynamic>> getGraphData(int deviceId, String start, String end) async {
     final response = await http.get(
       Uri.parse('$baseUrl$port/api/graph-data?device=$deviceId&start=$start&end=$end'),
     );
@@ -76,4 +75,17 @@ class ApiService {
       throw Exception('Failed to fetch irrigation time');
     }
   }
+
+  Future<Map<String, dynamic>> getCameraIpAddress(String deviceId) async{
+    final response = await http.get(
+      Uri.parse('$baseUrl$port/api/device-ip?device_id=$deviceId'),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to fetch devices ip: ${response.body}');
+      throw Exception('Failed to fetch devices ip');
+    }
+  }
+
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mais_2025_iot/screens/camera_view.dart';
 import 'package:mais_2025_iot/screens/raw_data_table.dart';
+import 'package:mais_2025_iot/services/api_service.dart';
 
 class DeviceData extends StatefulWidget {
   final int deviceId;
@@ -11,6 +13,7 @@ class DeviceData extends StatefulWidget {
 }
 
 class _DeviceDataState extends State<DeviceData> {
+  final apiService = ApiService();
   // Function to format the titles
   String formatTitle(String key) {
     Map<String, String> titleMapping = {
@@ -48,7 +51,18 @@ class _DeviceDataState extends State<DeviceData> {
           context,
           MaterialPageRoute(builder: (context) => RawDataTable(deviceId: widget.deviceId,)),
         );
-      }, icon: Icon(Icons.table_chart_rounded))],),
+      }, icon: Icon(Icons.table_chart_rounded)), IconButton(onPressed: () async {
+        print("device${widget.deviceId}");
+        await apiService.getCameraIpAddress("device${widget.deviceId}").then((value) {
+          final ipAddress = value['ip'];
+          print(ipAddress);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CameraView(ipAddress: ipAddress,)),
+          );
+        });
+
+      }, icon: Icon(Icons.camera_alt_rounded))],),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
