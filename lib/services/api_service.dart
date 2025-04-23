@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -76,16 +77,29 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getCameraIpAddress(String deviceId) async{
+  Future<Map<String, dynamic>> getCameraIpAddress(BuildContext context, String deviceId) async{
     final response = await http.get(
       Uri.parse('$baseUrl$port/api/device-ip?device_id=$deviceId'),
     );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Failed to fetch devices ip: ${response.body}');
+      final errorResponse = jsonDecode(response.body);
+      print('Failed to fetch devices ip: ${errorResponse['error']}');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Status ${response.statusCode}'),
+          content: Text(errorResponse['error']),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
       throw Exception('Failed to fetch devices ip');
     }
   }
-
 }

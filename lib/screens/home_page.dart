@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mais_2025_iot/screens/camera_view.dart';
 import 'package:mais_2025_iot/screens/device_data.dart';
 import 'package:mais_2025_iot/screens/raw_data_table.dart';
 import 'package:mais_2025_iot/screens/water_monitoring.dart';
@@ -141,9 +142,9 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("Irrigation\nPrediction", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text("Irrigation\nPrediction", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             SizedBox(height: 8),
-                            irrigationTime.isEmpty ? SizedBox(width: 20, height: 20,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            irrigationTime.isEmpty ? SizedBox(width: 20, height: 20,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -221,7 +222,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               "Recommended\nFertilizer",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
@@ -267,6 +268,66 @@ class _HomePageState extends State<HomePage> {
                 context,
                 MaterialPageRoute(builder: (context) => RawDataTable()),
               );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.camera_alt_rounded),
+            title: Text('Camera Device 1'),
+            onTap: () async {
+              Navigator.pop(context);
+              await apiService.getCameraIpAddress(context, "device1").then((value) {
+                final ipAddress = value['ip'];
+                print(ipAddress);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraView(ipAddress: ipAddress,)),
+                );
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.camera_alt_rounded),
+            title: Text('Camera Device 2'),
+            onTap: () async {
+              Navigator.pop(context);
+              await apiService.getCameraIpAddress(context, "device2").then((value) {
+                final ipAddress = value['ip'];
+                print(ipAddress);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraView(ipAddress: ipAddress,)),
+                );
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.camera_alt_rounded),
+            title: Text('Camera Device 3'),
+            onTap: () async {
+              Navigator.pop(context);
+              await apiService.getCameraIpAddress(context, "device3").then((value) {
+                final ipAddress = value['ip'];
+                print(ipAddress);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraView(ipAddress: ipAddress,)),
+                );
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.camera_alt_rounded),
+            title: Text('Camera Device 4'),
+            onTap: () async {
+              Navigator.pop(context);
+              await apiService.getCameraIpAddress(context, "device4").then((value) {
+                final ipAddress = value['ip'];
+                print(ipAddress);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraView(ipAddress: ipAddress,)),
+                );
+              });
             },
           ),
 

@@ -53,7 +53,7 @@ class _DeviceDataState extends State<DeviceData> {
         );
       }, icon: Icon(Icons.table_chart_rounded)), IconButton(onPressed: () async {
         print("device${widget.deviceId}");
-        await apiService.getCameraIpAddress("device${widget.deviceId}").then((value) {
+        await apiService.getCameraIpAddress(context, "device${widget.deviceId}").then((value) {
           final ipAddress = value['ip'];
           print(ipAddress);
           Navigator.push(
