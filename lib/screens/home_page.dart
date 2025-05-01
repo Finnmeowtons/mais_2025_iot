@@ -171,19 +171,24 @@ class _HomePageState extends State<HomePage> {
                   recommendFertilizer(),
                   SizedBox(width: 16,),
                   Expanded(
-                    child: Card(
-                      elevation: 4,
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: Container(
-                        height: 120,
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Irrigation\nPrediction", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 4),
-                            irrigationTime.isEmpty ? SizedBox(width: 12, height: 12,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          ],
+                    child: InkWell(
+                      onTap: (){
+                        _irrigationForecast();
+                      },
+                      child: Card(
+                        elevation: 4,
+                        margin: EdgeInsets.only(bottom: 16),
+                        child: Container(
+                          height: 120,
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("Irrigation\nPrediction", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 4),
+                              irrigationTime.isEmpty ? SizedBox(width: 12, height: 12,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -238,39 +243,44 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget recommendFertilizer() {
-    return Card(
-      elevation: 4,
-      clipBehavior: Clip.hardEdge,
-      margin: EdgeInsets.only(bottom: 16),
-      child: Container(
-        height: 120,
-        width: 170,
-        padding: EdgeInsets.all(8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Recommended\nFertilizer",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 4),
-            if (recommendedFertilizer.isEmpty)
-              SizedBox(height:12, width: 12, child: CircularProgressIndicator())
-            else if (recommendedFertilizer.isEmpty)
+    return InkWell(
+      onTap: (){
+        _recommendFertilizer();
+      },
+      child: Card(
+        elevation: 4,
+        clipBehavior: Clip.hardEdge,
+        margin: EdgeInsets.only(bottom: 16),
+        child: Container(
+          height: 120,
+          width: 170,
+          padding: EdgeInsets.all(8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               Text(
-                "Tap to request fertilizer \n recommendation",
-                style: TextStyle(fontSize: 12),
+                "Recommended\nFertilizer",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
-              )
-            else
-              Center(
-                child: Text(
-                  recommendedFertilizer,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
               ),
-          ],
+              SizedBox(height: 4),
+              if (recommendedFertilizer.isEmpty)
+                SizedBox(height:12, width: 12, child: CircularProgressIndicator())
+              else if (recommendedFertilizer.isEmpty)
+                Text(
+                  "Tap to request fertilizer \n recommendation",
+                  style: TextStyle(fontSize: 12),
+                  textAlign: TextAlign.center,
+                )
+              else
+                Center(
+                  child: Text(
+                    recommendedFertilizer,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
