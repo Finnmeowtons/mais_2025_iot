@@ -1,15 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mais_2025_iot/screens/home_page.dart';
 import 'package:mais_2025_iot/services/mqtt_manager.dart';
 
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initNotifications() async {
+  const AndroidInitializationSettings androidInit = AndroidInitializationSettings('notification_icon');
+
+
+  const InitializationSettings initSettings = InitializationSettings(android: androidInit);
+
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+}
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+  await initNotifications();
   final mqttManager = MqttManager();
   await mqttManager.initialize(); // Initialize connection
   mqttManager.subscribe("sensor/+/data");
   mqttManager.subscribe("water-level/full-state");
+  mqttManager.subscribe("mais/animal");
   runApp(MyApp(mqttManager: mqttManager));
 }
+
 
 class MyApp extends StatefulWidget {
   final MqttManager mqttManager;

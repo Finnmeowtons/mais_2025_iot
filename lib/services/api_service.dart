@@ -35,18 +35,25 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getGraphData(int deviceId, String start, String end) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl$port/api/graph-data?device=$deviceId&start=$start&end=$end'),
-    );
+  Future<List<dynamic>> getAggregatedData(bool isHour, int duration, int? deviceId) async {
+    String url = isHour
+        ? '$baseUrl$port/api/aggregated-data?hours=$duration'
+        : '$baseUrl$port/api/aggregated-data?days=$duration';
+    if (deviceId != null && deviceId != 0) {
+      url += '&device=$deviceId';
+    }
+    print(url);
+
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Failed to fetch graph data: ${response.statusCode}');
-      throw Exception('Failed to fetch graph data');
+      print('Failed to fetch aggregated data: ${response.statusCode}');
+      throw Exception('Failed to fetch aggregated data');
     }
   }
+
 
   Future<Map<String, dynamic>> irrigationForecast() async{
     final response = await http.get(
@@ -82,7 +89,8 @@ class ApiService {
       Uri.parse('$baseUrl$port/api/device-ip?device_id=$deviceId'),
     );
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final successResponse = jsonDecode(response.body);
+      return successResponse;
     } else {
       final errorResponse = jsonDecode(response.body);
       print('Failed to fetch devices ip: ${errorResponse['error']}');

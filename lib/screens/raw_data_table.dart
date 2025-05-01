@@ -35,7 +35,7 @@ class _RawDataTableState extends State<RawDataTable> {
         wrapInCard: true,
         controller: _controller,
         columns: const [
-          DataColumn2(label: Text('ID'), numeric: true, fixedWidth: 65),
+          DataColumn2(label: Text('ID'), numeric: true, fixedWidth: 80),
           DataColumn2(label: Text('Device ID'), numeric: true, fixedWidth: 115),
           DataColumn2(label: Text('Temp'), numeric: true, fixedWidth: 95),
           DataColumn2(label: Text('Humidity'), numeric: true, fixedWidth: 113),

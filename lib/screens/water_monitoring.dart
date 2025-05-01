@@ -21,7 +21,7 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
   String autoPump = 'false';
   String faucetControl = 'false';
   String autoWater = 'false';
-  String mode = 'tank';
+  String mode = 'mais';
   int waterState = 0;
 
   String? lastPumpControl;
@@ -128,7 +128,7 @@ class _WaterMonitoringState extends State<WaterMonitoring> {
         children: [
           Column(
             children: [
-              _modeSelectionSegmentedButton(),
+              // _modeSelectionSegmentedButton(),
               _WaterLevelAlert(
                 waterState: waterState ?? 0,
               ),
@@ -379,11 +379,11 @@ class _FaucetAlert extends StatelessWidget {
               watering == "true"
                   ? Image.asset(
                       "assets/water.png",
-                      height: 100,
+                      height: 60,
                     )
                   : Image.asset(
                       "assets/no_water.png",
-                      height: 100,
+                      height: 60,
                     ),
             ],
           ),
