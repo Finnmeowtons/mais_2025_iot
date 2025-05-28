@@ -43,35 +43,60 @@ class _DeviceDataState extends State<DeviceData> {
   ];
 
   void fetchAggregatedData(bool isHour, int duration, int deviceId) async {
-    final data = await apiService.getAggregatedData(isHour, duration, widget.deviceId);
+    try {
+      final data = await apiService.getAggregatedData(isHour, duration, deviceId);
 
-    Map<String, List<FlSpot>> loadedDataLines = {
-      for (var metric in metrics) metric: []
-    };
-    List<String> loadedTimestamps = [];
+      if (data.isEmpty) {
+        setState(() {
+          dataLines = {};
+          timestamps = [];
+          isLoading = false;
+        });
 
-    for (int i = 0; i < data.length; i++) {
-      final point = data[i];
-      double x = i.toDouble();
-
-      for (var metric in metrics) {
-        final value = point[metric];
-        if (value != null) {
-          loadedDataLines[metric]?.add(FlSpot(x, double.parse(value.toString())));
-        } else {
-          loadedDataLines[metric]?.add(FlSpot(x, 0));
-        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('No data available for the selected range.'),
+        ));
+        return;
       }
 
-      loadedTimestamps.add(formatTimestamp(point['window_start']));
-    }
+      Map<String, List<FlSpot>> loadedDataLines = {
+        for (var metric in metrics) metric: []
+      };
+      List<String> loadedTimestamps = [];
 
-    setState(() {
-      dataLines = loadedDataLines;
-      timestamps = loadedTimestamps;
-      isLoading = false;
-    });
+      for (int i = 0; i < data.length; i++) {
+        final point = data[i];
+        double x = i.toDouble();
+
+        for (var metric in metrics) {
+          final value = point[metric];
+          if (value != null) {
+            loadedDataLines[metric]?.add(FlSpot(x, double.parse(value.toString())));
+          } else {
+            loadedDataLines[metric]?.add(FlSpot(x, 0));
+          }
+        }
+
+        loadedTimestamps.add(formatTimestamp(point['window_start']));
+      }
+
+      setState(() {
+        dataLines = loadedDataLines;
+        timestamps = loadedTimestamps;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to load data.'),
+      ));
+      print("Error fetching data: $e");
+    }
   }
+
+
 
   String formatTimestamp(String timestamp) {
     DateTime dt = DateTime.parse(timestamp);
@@ -191,7 +216,9 @@ class _DeviceDataState extends State<DeviceData> {
             ),
             SizedBox(height: 12),
             Expanded(
-              child: SingleChildScrollView(
+              child: dataLines.isEmpty || timestamps.isEmpty
+                  ? Center(child: Text("No data to display."))
+                  : SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Container(
                   margin: EdgeInsets.only(top: 16),

@@ -8,6 +8,8 @@ import 'package:mais_2025_iot/screens/all_devices_list.dart';
 import 'package:mais_2025_iot/screens/camera_image_view.dart';
 import 'package:mais_2025_iot/screens/camera_view.dart';
 import 'package:mais_2025_iot/screens/device_data.dart';
+import 'package:mais_2025_iot/screens/fertilizer_month.dart';
+import 'package:mais_2025_iot/screens/irrigation_month.dart';
 import 'package:mais_2025_iot/screens/multiple_camera_image_view.dart';
 import 'package:mais_2025_iot/screens/multiple_camera_view.dart';
 import 'package:mais_2025_iot/screens/raw_data_table.dart';
@@ -28,6 +30,9 @@ class _HomePageState extends State<HomePage> {
   final ApiService apiService = ApiService();
   Map<int, Map<String, dynamic>> devices = {}; // Stores data per device
 
+  bool isLoadingFertilizer = false;
+  bool isLoadingIrrigation = false;
+
   bool faucetControl = false;
   int waterState = 0;
 
@@ -43,37 +48,43 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  void _recommendFertilizer() {
-    apiService.recommendFertilizer().then((value) {
+  void _recommendFertilizer() async {
+    setState(() => isLoadingFertilizer = true);
+    try {
+      final value = await apiService.recommendFertilizer();
       final fertilizer = value['recommendation'];
-      print(fertilizer);
-      if (fertilizer != null && fertilizer.isNotEmpty) {
 
+      if (fertilizer != null && fertilizer.isNotEmpty) {
         setState(() {
           recommendedFertilizer = fertilizer;
         });
       }
-    }).catchError((error) {
+    } catch (error) {
       print("Error fetching recommended fertilizer: $error");
-
-    });
+    } finally {
+      setState(() => isLoadingFertilizer = false);
+    }
   }
 
-  void _irrigationForecast() {
-    apiService.irrigationForecast().then((value) {
-      final rawTimestamp = value['irrigation_needed_at']; // e.g. "2025-04-12T18:15:01"
+  void _irrigationForecast() async {
+    setState(() => isLoadingIrrigation = true);
+    try {
+      final value = await apiService.irrigationForecast();
+      final rawTimestamp = value['irrigation_needed_at'];
 
       if (rawTimestamp != null && rawTimestamp.isNotEmpty) {
         final dateTime = DateTime.parse(rawTimestamp);
         final formattedTime = DateFormat('hh:mm a').format(dateTime);
 
         setState(() {
-          irrigationTime = formattedTime; // e.g. "06:15 PM"
+          irrigationTime = formattedTime;
         });
       }
-    }).catchError((error) {
+    } catch (error) {
       print("Error fetching irrigation forecast: $error");
-    });
+    } finally {
+      setState(() => isLoadingIrrigation = false);
+    }
   }
 
   Future<void> showNotification() async {
@@ -168,25 +179,33 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: [
-                  recommendFertilizer(),
+                  Expanded(child: recommendFertilizer()),
                   SizedBox(width: 16,),
                   Expanded(
                     child: InkWell(
                       onTap: (){
-                        _irrigationForecast();
+                        // isLoadingIrrigation ? null : _irrigationForecast();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IrrigationMonth(),
+                          ),
+                        );
                       },
                       child: Card(
                         elevation: 4,
                         margin: EdgeInsets.only(bottom: 16),
-                        child: Container(
-                          height: 120,
-                          padding: EdgeInsets.all(16),
+                        child: SizedBox(
+                          height: 80,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text("Irrigation\nPrediction", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 4),
-                              irrigationTime.isEmpty ? SizedBox(width: 12, height: 12,child: CircularProgressIndicator(),) : Text(irrigationTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                              // SizedBox(height: 4),
+                              // isLoadingIrrigation
+                              //     ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator())
+                              //     : Text(irrigationTime.isEmpty ? "No Data" : irrigationTime, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    
                             ],
                           ),
                         ),
@@ -244,17 +263,21 @@ class _HomePageState extends State<HomePage> {
 
   Widget recommendFertilizer() {
     return InkWell(
+      // onTap: isLoadingFertilizer ? null : _recommendFertilizer,
       onTap: (){
-        _recommendFertilizer();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FertilizerMonth(),
+          ),
+        );
       },
       child: Card(
         elevation: 4,
         clipBehavior: Clip.hardEdge,
         margin: EdgeInsets.only(bottom: 16),
-        child: Container(
-          height: 120,
-          width: 170,
-          padding: EdgeInsets.all(8),
+        child: SizedBox(
+          height: 80,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -263,22 +286,22 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 4),
-              if (recommendedFertilizer.isEmpty)
-                SizedBox(height:12, width: 12, child: CircularProgressIndicator())
-              else if (recommendedFertilizer.isEmpty)
-                Text(
-                  "Tap to request fertilizer \n recommendation",
-                  style: TextStyle(fontSize: 12),
-                  textAlign: TextAlign.center,
-                )
-              else
-                Center(
-                  child: Text(
-                    recommendedFertilizer,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
+              // SizedBox(height: 4),
+              // if (isLoadingFertilizer)
+              //   SizedBox(height: 12, width: 12, child: CircularProgressIndicator())
+              // else if (recommendedFertilizer.isEmpty)
+              //   Text(
+              //     "Tap to request fertilizer \nrecommendation",
+              //     style: TextStyle(fontSize: 12),
+              //     textAlign: TextAlign.center,
+              //   )
+              // else
+              //   Center(
+              //     child: Text(
+              //       recommendedFertilizer,
+              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              //     ),
+              //   ),
             ],
           ),
         ),
@@ -296,7 +319,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               color: Colors.blueAccent,
             ),
-            child: Center(child: Text("Optimizing Corn Yield Using Smart Agricultural Management", textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),)),
+            child: Center(child: Text("Smart Agricultural Management: An Integrated IoT-Machine Learning Approach", textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),)),
           ),
           ListTile(
             leading: Icon(Icons.table_chart_rounded),

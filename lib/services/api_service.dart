@@ -110,4 +110,48 @@ class ApiService {
       throw Exception('Failed to fetch devices ip');
     }
   }
+
+  Future<List<dynamic>> getMostRecommendedFertilizerMonthly() async {
+    final url = Uri.parse('$baseUrl$port2/most-recommended-fertilizer-monthly');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+        // print(decoded);
+        // if (decoded is Map && decoded.containsKey('fertilizer_by_month')) {
+        //   final List<dynamic> list = decoded['fertilizer_by_month'];
+        //   return list.map((item) => item as Map<String, dynamic>).toList();
+        // } else {
+        //   throw Exception('Invalid response format');
+        // }
+      } else {
+        throw Exception('Failed to fetch data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching most recommended fertilizer monthly: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<List<dynamic>> getDayFertilizerRecommendations() async {
+    final url = Uri.parse('$baseUrl$port2/day-fertilizer');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> decoded = jsonDecode(response.body);
+        // Extract the list under the "recommendations" key
+        return decoded['recommendations'] ?? [];
+      } else {
+        throw Exception('Failed to fetch data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching day fertilizer recommendations: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
 }
